@@ -42,7 +42,7 @@ public class UDPComm {
             DatagramPacket packet = new DatagramPacket(messageByte, messageByte.length);
             socket.receive(packet);
 
-            this.host = packet.getAddress().getHostName();
+            this.host = packet.getAddress().getHostAddress();
 
             setMessage(packet.getData());
             socket.close();

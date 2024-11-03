@@ -170,7 +170,7 @@ public class Menu {
             message = player1.getTeam() + player1.getName();
             commOut.setMessage(commOut.charToByte(message.toCharArray()));
 
-            System.out.println("Enviando: " + String.valueOf(commOut.message) + " para " + commOut.host+ ":" + commOut.port);
+            System.out.println("Enviando: " + String.valueOf(commOut.message) + " para " + commOut.host + ":" + commOut.port);
 
             commOut.sendMessage();
 
