@@ -86,8 +86,8 @@ public class Menu {
             String player1Name = player1TextField.getText().isEmpty() ? "Jogador1" : player1TextField.getText();
             String player2Name = player2TextField.getText().isEmpty() ? "Jogador2" : player2TextField.getText();
 
-            Player player1 = new Player(player1Name, 'X', 0);
-            Player player2 = new Player(player2Name, 'O', 0);
+            Player player1 = new Player(player1Name, 'X');
+            Player player2 = new Player(player2Name, 'O');
 
             new OfflineGame(primaryStage, player1, player2);
         });
@@ -145,26 +145,33 @@ public class Menu {
             startListeningButton.setDisable(true);
             player1TextField.setDisable(true);
 
-            UDPComm server = new UDPComm(1010);
-            String message;
-            String host;
+            UDPComm server = new UDPComm(1332);
+            String host = new String();
 
             if (server.receiveMsg()) {
-                message = server.getMsgStr();
-
+                String message = server.getMsgStr();
                 String player1Name = player1TextField.getText().isEmpty() ? "Jogador1" : player1TextField.getText();
                 String player2Name = message.substring(1);
 
-                Player player1 = new Player(player1Name, 'X', 0);
-                Player player2 = new Player(player2Name, 'O', 0);
+                Player player1 = new Player(player1Name, 'X');
+                Player player2 = new Player(player2Name, 'O');
+
+                System.out.println("Recebido: " + message);
+
+                server.setMsg(server.charToByte((player1.getTeam() + player1.getName()).toCharArray()));
+                server.sendMsg();
 
                 host = server.host;
-                UDPComm serverResponse = new UDPComm(host, 1010);
-                message = player1.getTeam() + player1.getName();
 
-                serverResponse.setMsg(serverResponse.charToByte(message.toCharArray()));
-                serverResponse.sendMsg();
+                UDPComm commOut = new UDPComm(host, 1332);
+                message = player2.getTeam() + player2.getName();
+                commOut.setMsg(commOut.charToByte(message.toCharArray()));
+                commOut.sendMsg();
             }
+            else {
+                System.out.println("fuck");
+            }
+
         });
 
         player1TextField.setMaxWidth(controlsWidth);
@@ -200,24 +207,18 @@ public class Menu {
 
             String player2Name = player2TextField.getText().isEmpty() ? "Jogador2" : player2TextField.getText();
 
-            Player player2 = new Player(player2Name, 'O', 0);
+            Player player2 = new Player(player2Name, 'O');
 
 
             String host = player1IPTextField.getText();
-            String msg;
 
-            UDPComm client = new UDPComm(host, 1010);
+            UDPComm client = new UDPComm(host, 1332);
 
-            msg = player2.getTeam() + player2.getName();
+            String msg = player2.getTeam() + player2.getName();
             client.setMsg(client.charToByte(msg.toCharArray()));
             client.sendMsg();
 
-            UDPComm server = new UDPComm(1010);
-            if (!server.receiveMsg()) System.exit(0);
-            msg = server.getMsgStr();
-
-            String player1Name = msg.substring(1);
-            Player player1 = new Player(player1Name, 'X', 0);
+            //UDPComm commIn = new UDPComm(1010);
         });
 
         player2TextField.setMaxWidth(controlsWidth);
