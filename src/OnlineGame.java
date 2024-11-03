@@ -57,8 +57,8 @@ public class OnlineGame {
 
         Button[][] gridButtons = createGridButtons(gridPane, currentPlayerLabel, restartButton, mainMenuButton, scoreboardLabel);
 
+        receivePlay(gridButtons);
         if (!clientTurn) {
-            receivePlay(gridButtons);
             currentPlayer = currentPlayer == player1 ? player2 : player1;
             currentPlayerLabel.setText(getCurrentPlayerText());
         }
@@ -125,23 +125,26 @@ public class OnlineGame {
     }
 
     private void receivePlay(Button[][] boardButtons) {
-        if (!clientTurn && !gameEnded) {
-            System.out.println("Recebendo mensagens");
+        new Thread(() -> {
+            while (!gameEnded) {
+                if (!clientTurn && comm.receiveMessage()) {
+                    Platform.runLater(() -> {
+                        for (int i = 0; i < 3; i++) {
+                            for (int j = 0; j < 3; j++) {
+                                boardButtons[i][j].setText(String.valueOf(comm.getJogada()[i * 3 + j]));
+                            }
+                        }
 
-            comm.receiveMessage();
-
-            System.out.println("Mesagem recebida:" + comm.getMessageStr());
-
-            Platform.runLater(() -> {
-                for (int i = 0; i < 3; i++) {
-                    for (int j = 0; j < 3; j++) {
-                        boardButtons[i][j].setText(String.valueOf(comm.getJogada()[i * 3 + j]));
-                    }
+                        clientTurn = true;
+                    });
                 }
-            });
-
-            clientTurn = true;
-        }
+                try {
+                    Thread.sleep(100); // Pequena pausa para não sobrecarregar a CPU
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+        }).start();
     }
 
     private void checkForWinner(Button restartButton, Button menuButton, Label scoreboardLabel) {
