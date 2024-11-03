@@ -58,10 +58,6 @@ public class OnlineGame {
         Button[][] gridButtons = createGridButtons(gridPane, currentPlayerLabel, restartButton, mainMenuButton, scoreboardLabel);
 
         receivePlay(gridButtons);
-        if (!clientTurn) {
-            currentPlayer = currentPlayer == player1 ? player2 : player1;
-            currentPlayerLabel.setText(getCurrentPlayerText());
-        }
 
         restartButton.setOnAction(e -> resetGame(gridButtons, currentPlayerLabel, restartButton, mainMenuButton));
         mainMenuButton.setOnAction(e -> new Menu(primaryStage).mainMenu());
@@ -129,11 +125,15 @@ public class OnlineGame {
             while (!gameEnded) {
                 if (!clientTurn && comm.receiveMessage()) {
                     Platform.runLater(() -> {
-                        for (int i = 0; i < 3; i++) {
-                            for (int j = 0; j < 3; j++) {
-                                boardButtons[i][j].setText(String.valueOf(comm.getJogada()[i * 3 + j]));
-                            }
+                        for (int i = 0; i < 9; i++) {
+                            boardButtons[i / 3][i % 3].setText(String.valueOf(comm.getJogada()[i]));
                         }
+
+//                        for (int i = 0; i < 3; i++) {
+//                            for (int j = 0; j < 3; j++) {
+//                                boardButtons[i][j].setText(String.valueOf(comm.getJogada()[i * 3 + j]));
+//                            }
+//                        }
 
                         clientTurn = true;
                     });
