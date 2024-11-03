@@ -100,23 +100,6 @@ public class OfflineGame {
         }
     }
 
-    private void resetGame(Button[][] boardButtons, Label currentPlayerLabel, Button restartButton, Button menuButton) {
-        initializeGame();
-
-        for (Button[] row : boardButtons) {
-            for (Button button : row) {
-                button.setText(" ");
-                button.setDisable(false);
-            }
-        }
-
-        restartButton.setDisable(true);
-        menuButton.setDisable(true);
-
-        currentPlayer = currentPlayer == player1 ? player2 : player1;
-        currentPlayerLabel.setText(getCurrentPlayerText());
-    }
-
     private void checkForWinner(Button restartButton, Button menuButton, Label scoreboardLabel) {
         int[][] winConditions = {
                 {0, 1, 2}, {3, 4, 5}, {6, 7, 8},
@@ -148,6 +131,23 @@ public class OfflineGame {
             restartButton.setDisable(false);
             menuButton.setDisable(false);
         }
+    }
+
+    private void resetGame(Button[][] boardButtons, Label currentPlayerLabel, Button restartButton, Button menuButton) {
+        initializeGame();
+
+        for (Button[] row : boardButtons) {
+            for (Button button : row) {
+                button.setText(" ");
+                button.setDisable(false);
+            }
+        }
+
+        restartButton.setDisable(true);
+        menuButton.setDisable(true);
+
+        currentPlayer = currentPlayer == player1 ? player2 : player1;
+        currentPlayerLabel.setText(getCurrentPlayerText());
     }
 
     private String getCurrentPlayerText() {

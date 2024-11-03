@@ -149,15 +149,14 @@ public class Menu {
             startListeningButton.setDisable(true);
             player1TextField.setDisable(true);
 
-            UDPComm commIn = new UDPComm(2020);
+            String host;
             String message;
+            UDPComm commIn = new UDPComm(2020);
 
             if (!commIn.receiveMessage())
                 return;
 
             message = commIn.getMessageStr();
-            System.out.println("Recebido: " + commIn.getMessageStr());
-            System.out.println("Jogador remoto a partir do endereço " + commIn.host);
 
             String player1Name = player1TextField.getText().isEmpty() ? "Jogador1" : player1TextField.getText();
             String player2Name = message.substring(1);
@@ -165,16 +164,15 @@ public class Menu {
             Player player1 = new Player(player1Name, 'X');
             Player player2 = new Player(player2Name, 'O');
 
-            UDPComm commOut = new UDPComm(commIn.host, 2020);
+            host = commIn.host;
+
+            UDPComm commOut = new UDPComm(host, 2020);
 
             message = player1.getTeam() + player1.getName();
             commOut.setMessage(commOut.charToByte(message.toCharArray()));
-
-            System.out.println("Enviando: " + String.valueOf(commOut.message) + " para " + commOut.host + ":" + commOut.port);
-
             commOut.sendMessage();
 
-            System.out.println("Conexão finalizada.");
+            new OnlineGame(primaryStage, player1, player2, true, host);
         });
 
         player1TextField.setMaxWidth(controlsWidth);
@@ -211,14 +209,13 @@ public class Menu {
             String player2Name = player2TextField.getText().isEmpty() ? "Jogador2" : player2TextField.getText();
             Player player2 = new Player(player2Name, 'O');
 
-            UDPComm commOut = new UDPComm(player1IPTextField.getText(), 2020);
+            String host = player1IPTextField.getText();
             String message;
+            UDPComm commOut = new UDPComm(host, 2020);
+
 
             message = player2.getTeam() + player2.getName();
             commOut.setMessage(commOut.charToByte(message.toCharArray()));
-
-            System.out.println("Enviando: " + String.valueOf(commOut.message) + " para " + commOut.host + ":" + commOut.port);
-
             commOut.sendMessage();
 
             UDPComm commIn = new UDPComm(2020);
@@ -227,13 +224,11 @@ public class Menu {
                 return;
 
             message = commIn.getMessageStr();
-            System.out.println("Recebido: " + commIn.getMessageStr());
-            System.out.println("Jogador remoto a partir do endereço " + commIn.host);
 
             String player1Name = message.substring(1);
-            Player player1 = new Player(player1Name, 'O');
+            Player player1 = new Player(player1Name, 'X');
 
-            System.out.println("Conexão finalizada.");
+            new OnlineGame(primaryStage, player1, player2, false, host);
         });
 
         player2TextField.setMaxWidth(controlsWidth);
@@ -247,7 +242,6 @@ public class Menu {
 
         primaryStage.setScene(new Scene(vbox, 500, 400));
     }
-
 
     private void rulesStage() {
         Stage stage = new Stage();
