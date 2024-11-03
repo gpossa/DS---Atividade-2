@@ -154,8 +154,13 @@ public class OnlineGame {
             while (gameEnded) {
                 if (comm.receiveMessage()) {
                     if (Objects.equals(comm.getMessageStr(), "RESTART")) {
-                        resetGame(boardButtons, currentPlayerLabel, restartButton, mainMenuButton);
+                        Platform.runLater(() -> resetGame(boardButtons, currentPlayerLabel, restartButton, mainMenuButton));
                     }
+                }
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
                 }
             }
         }).start();
