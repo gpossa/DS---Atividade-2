@@ -58,18 +58,8 @@ public class OnlineGame {
 
         Button[][] gridButtons = createGridButtons(gridPane, currentPlayerLabel, restartButton, mainMenuButton, scoreboardLabel);
 
-        restartButton.setOnAction(e -> {
-            comm.setMessage(comm.charToByte("RESTART".toCharArray()));
-            comm.sendMessage();
-
-            resetGame(gridButtons, currentPlayerLabel, restartButton, mainMenuButton);
-        });
-        mainMenuButton.setOnAction(e -> {
-            comm.setMessage(comm.charToByte("LEAVE".toCharArray()));
-            comm.sendMessage();
-
-            new Menu(primaryStage).mainMenu();
-        });
+        restartButton.setOnAction(e -> resetGame(gridButtons, currentPlayerLabel, restartButton, mainMenuButton));
+        mainMenuButton.setOnAction(e -> new Menu(primaryStage).mainMenu());
 
         receivePlay(gridButtons, currentPlayerLabel, restartButton, mainMenuButton, scoreboardLabel);
 
@@ -164,12 +154,7 @@ public class OnlineGame {
             while (gameEnded) {
                 if (comm.receiveMessage()) {
                     if (Objects.equals(comm.getMessageStr(), "RESTART")) {
-                        playerActionAlert("RESTART");
                         resetGame(boardButtons, currentPlayerLabel, restartButton, mainMenuButton);
-                    }
-                    else if (Objects.equals(comm.getMessageStr(), "LEAVE")) {
-                        playerActionAlert("LEAVE");
-                        new Menu(primaryStage).mainMenu();
                     }
                 }
             }
@@ -225,6 +210,9 @@ public class OnlineGame {
 
         currentPlayer = currentPlayer == player1 ? player2 : player1;
         currentPlayerLabel.setText(getCurrentPlayerText());
+
+        comm.setMessage(comm.charToByte("RESTART".toCharArray()));
+        comm.sendMessage();
     }
 
     private String getCurrentPlayerText() {
@@ -241,15 +229,6 @@ public class OnlineGame {
         alert.setTitle("FIM DE JOGO");
         alert.setHeaderText(winnerName.equals("Empate") ? "Empate!" : "Temos um vencedor!");
         alert.setContentText(winnerName.equals("Empate") ? "A partida terminou em empate!" : "Parabéns, " + winnerName + "!");
-        alert.showAndWait();
-    }
-
-    private void playerActionAlert(String action) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-
-        alert.setTitle(action.equals("RESTART") ? "NOVA PARTIDA" : "FIM DE JOGO");
-        alert.setHeaderText(action.equals("RESTART") ? "Nova partida!" : "Seu oponente saiu!");
-        alert.setContentText(action.equals("RESTART") ? "Uma nova partida foi iniciada" : "Seu oponente voltou ao menu principal");
         alert.showAndWait();
     }
 }
