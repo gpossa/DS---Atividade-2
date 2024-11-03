@@ -141,6 +141,11 @@ public class OnlineGame {
                         clientTurn = true;
                     });
                 }
+                try {
+                    Thread.sleep(100); // Pequena pausa para não sobrecarregar a CPU
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
             }
         }).start();
     }
