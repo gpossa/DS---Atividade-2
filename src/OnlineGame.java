@@ -21,7 +21,7 @@ public class OnlineGame {
     private boolean gameEnded;
     private boolean clientTurn;
     private final String host;
-    private UDPComm comm;
+    private final UDPComm comm;
 
     public OnlineGame(Stage primaryStage, Player player1, Player player2, boolean clientTurn, String host) {
         this.primaryStage = primaryStage;
@@ -30,12 +30,12 @@ public class OnlineGame {
         this.currentPlayer = player1;
         this.clientTurn = clientTurn;
         this.host = host;
+        comm = new UDPComm(host, 2020);
         initializeGame();
         createGameScene();
     }
 
     private void initializeGame() {
-        comm = new UDPComm(host, 2020);
         numPlays = 0;
         gameEnded = false;
         Arrays.fill(gameArray, ' ');
@@ -154,6 +154,7 @@ public class OnlineGame {
             while (gameEnded) {
                 if (comm.receiveMessage()) {
                     if (Objects.equals(comm.getMessageStr(), "RESTART")) {
+                        System.out.println("restartttt");
                         Platform.runLater(() -> resetGame(boardButtons, currentPlayerLabel, restartButton, mainMenuButton));
                     }
                 }
