@@ -9,18 +9,17 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 import java.util.Arrays;
-import java.util.Date;
 
 public class OnlineGame {
     private final Stage primaryStage;
     private final Player player1;
     private final Player player2;
     private Player currentPlayer;
-    private char[] gameArray = new char[9];
+    private final char[] gameArray = new char[9];
     private int numPlays;
     private boolean gameEnded;
     private boolean clientTurn;
-    private String host;
+    private final String host;
     private UDPComm comm;
 
     public OnlineGame(Stage primaryStage, Player player1, Player player2, boolean clientTurn, String host) {
@@ -58,8 +57,11 @@ public class OnlineGame {
 
         Button[][] gridButtons = createGridButtons(gridPane, currentPlayerLabel, restartButton, mainMenuButton, scoreboardLabel);
 
-        if (!clientTurn)
+        if (!clientTurn) {
             receivePlay(gridButtons);
+            currentPlayer = currentPlayer == player1 ? player2 : player1;
+            currentPlayerLabel.setText(getCurrentPlayerText());
+        }
 
         restartButton.setOnAction(e -> resetGame(gridButtons, currentPlayerLabel, restartButton, mainMenuButton));
         mainMenuButton.setOnAction(e -> new Menu(primaryStage).mainMenu());
