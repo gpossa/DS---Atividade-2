@@ -213,7 +213,6 @@ public class Menu {
             String message;
             UDPComm commOut = new UDPComm(host, 2020);
 
-
             message = player2.getTeam() + player2.getName();
             commOut.setMessage(commOut.charToByte(message.toCharArray()));
             commOut.sendMessage();
