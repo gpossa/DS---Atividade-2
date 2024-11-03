@@ -21,6 +21,7 @@ public class OnlineGame {
     private boolean gameEnded;
     private boolean clientTurn;
     private String host;
+    private UDPComm comm;
 
     public OnlineGame(Stage primaryStage, Player player1, Player player2, boolean clientTurn, String host) {
         this.primaryStage = primaryStage;
@@ -34,9 +35,11 @@ public class OnlineGame {
     }
 
     private void initializeGame() {
+        comm = new UDPComm(host, 2020);
         numPlays = 0;
         gameEnded = false;
         Arrays.fill(gameArray, ' ');
+        System.out.println(host);
     }
 
     public void createGameScene() {
@@ -52,10 +55,11 @@ public class OnlineGame {
 
         restartButton.setDisable(true);
         mainMenuButton.setDisable(true);
-        
+
         Button[][] gridButtons = createGridButtons(gridPane, currentPlayerLabel, restartButton, mainMenuButton, scoreboardLabel);
 
-        receivePlay(gridButtons);
+        if (!clientTurn)
+            receivePlay(gridButtons);
 
         restartButton.setOnAction(e -> resetGame(gridButtons, currentPlayerLabel, restartButton, mainMenuButton));
         mainMenuButton.setOnAction(e -> new Menu(primaryStage).mainMenu());
@@ -94,7 +98,7 @@ public class OnlineGame {
     }
 
     private void handleButtonClick(Button button, int index, Label currentPlayerLabel, Button restartButton, Button menuButton, Label scoreboardLabel) {
-        if (gameArray[index] == ' ' && !gameEnded) {
+        if (gameArray[index] == ' ' && !gameEnded && clientTurn) {
             button.setText(String.valueOf(currentPlayer.getTeam()));
             gameArray[index] = currentPlayer.getTeam();
             numPlays++;
@@ -112,8 +116,6 @@ public class OnlineGame {
 
     private void sendPlay() {
         if (clientTurn) {
-            UDPComm comm = new UDPComm(host, 2020);
-
             comm.setMessage(comm.charToByte(gameArray));
             comm.sendMessage();
             clientTurn = false;
@@ -122,13 +124,15 @@ public class OnlineGame {
 
     private void receivePlay(Button[][] boardButtons) {
         if (!clientTurn && !gameEnded) {
-            UDPComm comm = new UDPComm(host, 1010);
+            System.out.println("Recebendo mensagens");
+
             comm.receiveMessage();
+
+            System.out.println("Mesagem recebida:" + comm.getMessageStr());
 
             Platform.runLater(() -> {
                 for (int i = 0; i < 3; i++) {
                     for (int j = 0; j < 3; j++) {
-                        // Atualiza cada botão ou label com o valor do tabuleiro
                         boardButtons[i][j].setText(String.valueOf(comm.getJogada()[i * 3 + j]));
                     }
                 }
