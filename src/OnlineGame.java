@@ -15,7 +15,7 @@ public class OnlineGame {
     private final Player player1;
     private final Player player2;
     private Player currentPlayer;
-    private final char[] gameArray = new char[9];
+    private char[] gameArray = new char[9];
     private int numPlays;
     private boolean gameEnded;
     private boolean clientTurn;
@@ -116,7 +116,7 @@ public class OnlineGame {
         if (clientTurn) {
             comm.setMessage(comm.charToByte(gameArray));
             comm.sendMessage();
-            System.out.println(comm.getMessageStr());
+            System.out.println("Send: " + comm.getMessageStr());
             clientTurn = false;
         }
     }
@@ -126,11 +126,10 @@ public class OnlineGame {
             while (!gameEnded) {
                 if (!clientTurn && comm.receiveMessage()) {
                     Platform.runLater(() -> {
-//                        for (int i = 0; i < 9; i++) {
-//                            boardButtons[i / 3][i % 3].setText(String.valueOf(comm.getJogada()[i]));
-//                        }
-//
-                        System.out.println(comm.getMessageStr());
+                        System.out.println("Receive: " + comm.getMessageStr());
+
+                        gameArray = comm.getJogada();
+
                         for (int i = 0; i < 3; i++) {
                             for (int j = 0; j < 3; j++) {
                                 boardButtons[i][j].setText(String.valueOf(comm.getJogada()[i * 3 + j]));
