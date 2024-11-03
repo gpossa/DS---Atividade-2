@@ -116,6 +116,7 @@ public class OnlineGame {
         if (clientTurn) {
             comm.setMessage(comm.charToByte(gameArray));
             comm.sendMessage();
+            System.out.println(comm.getMessageStr());
             clientTurn = false;
         }
     }
@@ -125,23 +126,19 @@ public class OnlineGame {
             while (!gameEnded) {
                 if (!clientTurn && comm.receiveMessage()) {
                     Platform.runLater(() -> {
-                        for (int i = 0; i < 9; i++) {
-                            boardButtons[i / 3][i % 3].setText(String.valueOf(comm.getJogada()[i]));
-                        }
-
-//                        for (int i = 0; i < 3; i++) {
-//                            for (int j = 0; j < 3; j++) {
-//                                boardButtons[i][j].setText(String.valueOf(comm.getJogada()[i * 3 + j]));
-//                            }
+//                        for (int i = 0; i < 9; i++) {
+//                            boardButtons[i / 3][i % 3].setText(String.valueOf(comm.getJogada()[i]));
 //                        }
+//
+                        System.out.println(comm.getMessageStr());
+                        for (int i = 0; i < 3; i++) {
+                            for (int j = 0; j < 3; j++) {
+                                boardButtons[i][j].setText(String.valueOf(comm.getJogada()[i * 3 + j]));
+                            }
+                        }
 
                         clientTurn = true;
                     });
-                }
-                try {
-                    Thread.sleep(100); // Pequena pausa para não sobrecarregar a CPU
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
                 }
             }
         }).start();
