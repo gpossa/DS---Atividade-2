@@ -6,74 +6,8 @@ import java.net.InetAddress;
 public class UDPComm {
     String host = "";
     int port;
-    char[] msg = new char[256];
-    byte[] msgByte = new byte[256];
-
-    public boolean sendMsg() {
-        try {
-            InetAddress addr = InetAddress.getByName(host);
-            DatagramPacket pkg = new DatagramPacket(msgByte, msgByte.length, addr, port);
-            DatagramSocket ds = new DatagramSocket();
-
-            ds.send(pkg);
-            ds.close();
-
-            return true;
-        }
-        catch (IOException ioe) {
-            return false;
-        }
-    }
-
-    public boolean receiveMsg() {
-        byte[] msgByte = new byte[256];
-
-        try {
-            DatagramSocket ds = new DatagramSocket(port);
-            DatagramPacket pkg = new DatagramPacket(msgByte, msgByte.length);
-            ds.receive(pkg);
-
-            this.host = pkg.getAddress().getHostName();
-
-            setMsg(pkg.getData());
-            ds.close();
-
-            return true;
-
-        } catch (IOException ioe) {
-            System.out.println(ioe.getMessage());
-            return false;
-        }
-    }
-
-    public void setMsg(byte[] msgByte) {
-        this.msgByte = msgByte;
-        this.msg = byteToChar(msgByte);
-    }
-
-    public String getMsgStr() {
-        String msgStr = "";
-
-        for (int i = 0; i < this.msg.length; i++)
-            if (this.msg[i]!=0)
-                msgStr = msgStr + this.msg[i];
-
-        return msgStr;
-    }
-
-    public char[] getJogada() {
-        char[] jogada = {' ',' ',' ',' ',' ',' ',' ',' ',' '};
-
-        for (int i = 0; i < this.msg.length; i++) {
-            if (i > 8)
-                break;
-
-            if (this.msg[i] != 0)
-                jogada[i] = this.msg[i];
-        }
-
-        return jogada;
-    }
+    char[] message = new char[256];
+    byte[] messageByte = new byte[256];
 
     public UDPComm(String host, int port) {
         this.host = host;
@@ -84,21 +18,87 @@ public class UDPComm {
         this.port = port;
     }
 
-    public byte[] charToByte(char[] msg) {
-        byte[] msgByte = new byte[msg.length];
+    public boolean sendMessage() {
+        try {
+            InetAddress address = InetAddress.getByName(host);
+            DatagramSocket socket = new DatagramSocket();
+            DatagramPacket packet = new DatagramPacket(messageByte, messageByte.length, address, port);
 
-        for (int i = 0;i<msg.length;i++)
-            msgByte[i] = (byte) msg[i];
+            socket.send(packet);
+            socket.close();
 
-        return msgByte;
+            return true;
+        }
+        catch (IOException ioe) {
+            return false;
+        }
     }
 
-    private char[] byteToChar(byte[] msgByte) {
-        char[] msg = new char[msgByte.length];
+    public boolean receiveMessage() {
+        byte[] messageByte = new byte[256];
 
-        for (int i = 0; i < msgByte.length; i++)
-            msg[i] = (char) msgByte[i];
+        try {
+            DatagramSocket socket = new DatagramSocket(port);
+            DatagramPacket packet = new DatagramPacket(messageByte, messageByte.length);
+            socket.receive(packet);
 
-        return msg;
+            this.host = packet.getAddress().getHostName();
+
+            setMessage(packet.getData());
+            socket.close();
+
+            return true;
+
+        } catch (IOException ioe) {
+            System.out.println(ioe.getMessage());
+            return false;
+        }
+    }
+
+    public void setMessage(byte[] messageByte) {
+        this.messageByte = messageByte;
+        this.message = byteToChar(messageByte);
+    }
+
+    public String getMessageStr() {
+        StringBuilder messageStr = new StringBuilder();
+
+        for (char c : this.message)
+            if (c != 0)
+                messageStr.append(c);
+
+        return messageStr.toString();
+    }
+
+    public char[] getJogada() {
+        char[] jogada = {' ',' ',' ',' ',' ',' ',' ',' ',' '};
+
+        for (int i = 0; i < this.message.length; i++) {
+            if (i > 8)
+                break;
+
+            if (this.message[i] != 0)
+                jogada[i] = this.message[i];
+        }
+
+        return jogada;
+    }
+
+    public byte[] charToByte(char[] message) {
+        byte[] messageByte = new byte[message.length];
+
+        for (int i = 0; i < message.length; i++)
+            messageByte[i] = (byte) message[i];
+
+        return messageByte;
+    }
+
+    private char[] byteToChar(byte[] messageByte) {
+        char[] message = new char[messageByte.length];
+
+        for (int i = 0; i < messageByte.length; i++)
+            message[i] = (char) messageByte[i];
+
+        return message;
     }
 }

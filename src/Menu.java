@@ -81,6 +81,7 @@ public class Menu {
         player2TextField.setPromptText("Jogador2");
 
         Button startGameButton = new Button("Iniciar jogo");
+        Button backButton = new Button("Voltar");
 
         startGameButton.setOnAction(e -> {
             String player1Name = player1TextField.getText().isEmpty() ? "Jogador1" : player1TextField.getText();
@@ -92,14 +93,17 @@ public class Menu {
             new OfflineGame(primaryStage, player1, player2);
         });
 
+        backButton.setOnAction(e -> newGameScene());
+
         player1TextField.setMaxWidth(controlsWidth);
         player2TextField.setMaxWidth(controlsWidth);
         startGameButton.setMaxWidth(controlsWidth);
+        backButton.setMaxWidth(controlsWidth);
 
         vbox.setStyle("-fx-spacing: 10; -fx-alignment: center;");
         titleLabel.setStyle("-fx-font-size: 24px; -fx-fill: black; -fx-font-weight: bold;");
 
-        vbox.getChildren().addAll(titleLabel, player1Label, player1TextField, player2Label, player2TextField, startGameButton);
+        vbox.getChildren().addAll(titleLabel, player1Label, player1TextField, player2Label, player2TextField, startGameButton, backButton);
 
         primaryStage.setScene(new Scene(vbox, 500, 400));
     }
@@ -134,54 +138,52 @@ public class Menu {
 
         Label titleLabel = new Label("AGUARDAR CONEXÃO");
         Label player1Label = new Label("Nome do Jogador 1 (Time X)");
-        Label player2IPLabel = new Label("Endereço IP do Jogador 2");
 
         TextField player1TextField = new TextField();
-        TextField player2IPTextField = new TextField();
 
         player1TextField.setPromptText("Jogador1");
-        player2IPTextField.setPromptText("IP");
 
         Button startListeningButton = new Button("Iniciar espera");
 
         startListeningButton.setOnAction(e -> {
-            UDPComm server = new UDPComm(1332);
-            String host = player2IPTextField.getText();
+            startListeningButton.setDisable(true);
+            player1TextField.setDisable(true);
 
-            if (server.receiveMsg()) {
-                String message = server.getMsgStr();
-                String player1Name = player1TextField.getText().isEmpty() ? "Jogador1" : player1TextField.getText();
-                String player2Name = message.substring(1);
+            UDPComm commIn = new UDPComm(2020);
+            String message;
 
-                Player player1 = new Player(player1Name, 'X');
-                Player player2 = new Player(player2Name, 'O');
+            if (!commIn.receiveMessage())
+                return;
 
-                System.out.println("Recebido: " + message);
+            message = commIn.getMessageStr();
+            System.out.println("Recebido: " + commIn.getMessageStr());
+            System.out.println("Jogador remoto a partir do endereço " + commIn.host);
 
-                server.setMsg(server.charToByte((player1.getTeam() + player1.getName()).toCharArray()));
-                server.sendMsg();
+            String player1Name = player1TextField.getText().isEmpty() ? "Jogador1" : player1TextField.getText();
+            String player2Name = message.substring(1);
 
-                System.out.println(host);
+            Player player1 = new Player(player1Name, 'X');
+            Player player2 = new Player(player2Name, 'O');
 
-                UDPComm commOut = new UDPComm(host, 1332);
-                message = player2.getTeam() + player2.getName();
-                commOut.setMsg(commOut.charToByte(message.toCharArray()));
-                commOut.sendMsg();
-            }
-            else {
-                System.out.println("fuck");
-            }
+            UDPComm commOut = new UDPComm(commIn.host, 2020);
 
+            message = player1.getTeam() + player1.getName();
+            commOut.setMessage(commOut.charToByte(message.toCharArray()));
+
+            System.out.println("Enviando: " + String.valueOf(commOut.message) + " para " + commOut.host+ ":" + commOut.port);
+
+            commOut.sendMessage();
+
+            System.out.println("Conexão finalizada.");
         });
 
         player1TextField.setMaxWidth(controlsWidth);
-        player2IPTextField.setMaxWidth(controlsWidth);
         startListeningButton.setMaxWidth(controlsWidth);
 
         vbox.setStyle("-fx-spacing: 10; -fx-alignment: center;");
         titleLabel.setStyle("-fx-font-size: 24px; -fx-fill: black; -fx-font-weight: bold;");
 
-        vbox.getChildren().addAll(titleLabel, player1Label, player1TextField, player2IPLabel, player2IPTextField, startListeningButton);
+        vbox.getChildren().addAll(titleLabel, player1Label, player1TextField, startListeningButton);
 
         primaryStage.setScene(new Scene(vbox, 500, 400));
     }
@@ -207,23 +209,31 @@ public class Menu {
             player1IPTextField.setDisable(true);
 
             String player2Name = player2TextField.getText().isEmpty() ? "Jogador2" : player2TextField.getText();
-
             Player player2 = new Player(player2Name, 'O');
 
-            String host = player1IPTextField.getText();
+            UDPComm commOut = new UDPComm(player1IPTextField.getText(), 2020);
+            String message;
 
-            UDPComm client = new UDPComm(host, 1332);
+            message = player2.getTeam() + player2.getName();
+            commOut.setMessage(commOut.charToByte(message.toCharArray()));
 
-            String msg = player2.getTeam() + player2.getName();
-            client.setMsg(client.charToByte(msg.toCharArray()));
-            client.sendMsg();
+            System.out.println("Enviando: " + String.valueOf(commOut.message) + " para " + commOut.host + ":" + commOut.port);
 
-            UDPComm commIn = new UDPComm(1332);
-            if (commIn.receiveMsg()) {
-                msg = commIn.getMsgStr();
-                String player1Name = msg.substring(1);
-                Player player1 = new Player(player1Name, 'X');
-            }
+            commOut.sendMessage();
+
+            UDPComm commIn = new UDPComm(2020);
+
+            if (!commIn.receiveMessage())
+                return;
+
+            message = commIn.getMessageStr();
+            System.out.println("Recebido: " + commIn.getMessageStr());
+            System.out.println("Jogador remoto a partir do endereço " + commIn.host);
+
+            String player1Name = message.substring(1);
+            Player player1 = new Player(player1Name, 'O');
+
+            System.out.println("Conexão finalizada.");
         });
 
         player2TextField.setMaxWidth(controlsWidth);
@@ -237,6 +247,7 @@ public class Menu {
 
         primaryStage.setScene(new Scene(vbox, 500, 400));
     }
+
 
     private void rulesStage() {
         Stage stage = new Stage();
