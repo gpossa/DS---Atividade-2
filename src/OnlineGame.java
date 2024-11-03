@@ -1,3 +1,4 @@
+import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
@@ -51,8 +52,10 @@ public class OnlineGame {
 
         restartButton.setDisable(true);
         mainMenuButton.setDisable(true);
-
+        
         Button[][] gridButtons = createGridButtons(gridPane, currentPlayerLabel, restartButton, mainMenuButton, scoreboardLabel);
+
+        receivePlay(gridButtons);
 
         restartButton.setOnAction(e -> resetGame(gridButtons, currentPlayerLabel, restartButton, mainMenuButton));
         mainMenuButton.setOnAction(e -> new Menu(primaryStage).mainMenu());
@@ -91,12 +94,12 @@ public class OnlineGame {
     }
 
     private void handleButtonClick(Button button, int index, Label currentPlayerLabel, Button restartButton, Button menuButton, Label scoreboardLabel) {
-        if (gameArray[index] == ' ' && !gameEnded && clientTurn) {
+        if (gameArray[index] == ' ' && !gameEnded) {
             button.setText(String.valueOf(currentPlayer.getTeam()));
             gameArray[index] = currentPlayer.getTeam();
             numPlays++;
 
-            UDPConnection();
+            sendPlay();
 
             checkForWinner(restartButton, menuButton, scoreboardLabel);
 
@@ -107,17 +110,30 @@ public class OnlineGame {
         }
     }
 
-    private void UDPConnection() {
-        UDPComm comm = new UDPComm(host, 2020);
-
+    private void sendPlay() {
         if (clientTurn) {
+            UDPComm comm = new UDPComm(host, 2020);
+
             comm.setMessage(comm.charToByte(gameArray));
             comm.sendMessage();
             clientTurn = false;
         }
-        else {
+    }
+
+    private void receivePlay(Button[][] boardButtons) {
+        if (!clientTurn && !gameEnded) {
+            UDPComm comm = new UDPComm(host, 1010);
             comm.receiveMessage();
-            gameArray = comm.getJogada();
+
+            Platform.runLater(() -> {
+                for (int i = 0; i < 3; i++) {
+                    for (int j = 0; j < 3; j++) {
+                        // Atualiza cada botão ou label com o valor do tabuleiro
+                        boardButtons[i][j].setText(String.valueOf(comm.getJogada()[i * 3 + j]));
+                    }
+                }
+            });
+
             clientTurn = true;
         }
     }
