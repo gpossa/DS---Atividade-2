@@ -57,7 +57,7 @@ public class OnlineGame {
 
         Button[][] gridButtons = createGridButtons(gridPane, currentPlayerLabel, restartButton, mainMenuButton, scoreboardLabel);
 
-        receivePlay(gridButtons);
+        receivePlay(gridButtons, currentPlayerLabel);
 
         restartButton.setOnAction(e -> resetGame(gridButtons, currentPlayerLabel, restartButton, mainMenuButton));
         mainMenuButton.setOnAction(e -> new Menu(primaryStage).mainMenu());
@@ -121,7 +121,7 @@ public class OnlineGame {
         }
     }
 
-    private void receivePlay(Button[][] boardButtons) {
+    private void receivePlay(Button[][] boardButtons, Label currentPlayerLabel) {
         new Thread(() -> {
             while (!gameEnded) {
                 if (!clientTurn && comm.receiveMessage()) {
@@ -137,6 +137,8 @@ public class OnlineGame {
                             }
                         }
 
+                        currentPlayer = currentPlayer == player1 ? player2 : player1;
+                        currentPlayerLabel.setText(getCurrentPlayerText());
                         clientTurn = true;
                     });
                 }
