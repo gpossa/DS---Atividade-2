@@ -1,0 +1,1 @@
+--module-path "C:\Program Files\Java\javafx-sdk-21.0.5\lib" --add-modules javafx.controls,javafx.fxml
