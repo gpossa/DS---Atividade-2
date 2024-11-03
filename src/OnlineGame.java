@@ -15,6 +15,7 @@ public class OnlineGame {
     private final Stage primaryStage;
     private final Player player1;
     private final Player player2;
+    private Player startingPlayer;
     private Player currentPlayer;
     private char[] gameArray = new char[9];
     private int numPlays;
@@ -27,6 +28,7 @@ public class OnlineGame {
         this.primaryStage = primaryStage;
         this.player1 = player1;
         this.player2 = player2;
+        this.startingPlayer = player1;
         this.currentPlayer = player1;
         this.clientTurn = clientTurn;
         this.host = host;
@@ -36,6 +38,7 @@ public class OnlineGame {
     }
 
     private void initializeGame() {
+        currentPlayer = startingPlayer;
         numPlays = 0;
         gameEnded = false;
         Arrays.fill(gameArray, ' ');
@@ -53,6 +56,7 @@ public class OnlineGame {
         Button restartButton  = new Button("Nova partida");
         Button mainMenuButton = new Button("Menu inicial");
 
+        currentPlayerLabel.setVisible(false);
         restartButton.setDisable(true);
         mainMenuButton.setDisable(true);
 
@@ -104,7 +108,7 @@ public class OnlineGame {
 
             sendPlay();
 
-            checkForWinner(restartButton, mainMenuButton, scoreboardLabel);
+            checkForWinner(restartButton, mainMenuButton, currentPlayerLabel, scoreboardLabel);
 
             if (!gameEnded) {
                 currentPlayer = (currentPlayer == player1) ? player2 : player1;
@@ -131,7 +135,7 @@ public class OnlineGame {
 
                         gameArray = comm.getJogada();
 
-                        checkForWinner(restartButton, mainMenuButton, scoreboardLabel);
+                        checkForWinner(restartButton, mainMenuButton, currentPlayerLabel, scoreboardLabel);
 
                         for (int i = 0; i < 3; i++) {
                             for (int j = 0; j < 3; j++) {
@@ -166,7 +170,7 @@ public class OnlineGame {
         }).start();
     }
 
-    private void checkForWinner(Button restartButton, Button mainMenuButton, Label scoreboardLabel) {
+    private void checkForWinner(Button restartButton, Button mainMenuButton, Label currentPlayerLabel, Label scoreboardLabel) {
         int[][] winConditions = {
                 {0, 1, 2}, {3, 4, 5}, {6, 7, 8},
                 {0, 3, 6}, {1, 4, 7}, {2, 5, 8},
@@ -184,6 +188,7 @@ public class OnlineGame {
 
                 restartButton.setDisable(false);
                 mainMenuButton.setDisable(false);
+                currentPlayerLabel.setVisible(false);
 
                 scoreboardLabel.setText(getScoreboardText());
 
@@ -201,6 +206,8 @@ public class OnlineGame {
     }
 
     private void resetGame(Button[][] boardButtons, Label currentPlayerLabel, Button restartButton, Button mainMenuButton) {
+        startingPlayer = (startingPlayer == player1) ? player2 : player1;
+
         initializeGame();
 
         for (Button[] row : boardButtons) {
@@ -213,7 +220,6 @@ public class OnlineGame {
         restartButton.setDisable(true);
         mainMenuButton.setDisable(true);
 
-        currentPlayer = currentPlayer == player1 ? player2 : player1;
         currentPlayerLabel.setText(getCurrentPlayerText());
 
         comm.setMessage(comm.charToByte("RESTART".toCharArray()));
