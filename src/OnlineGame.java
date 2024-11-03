@@ -58,8 +58,6 @@ public class OnlineGame {
 
         Button[][] gridButtons = createGridButtons(gridPane, currentPlayerLabel, restartButton, mainMenuButton, scoreboardLabel);
 
-        receivePlay(gridButtons, currentPlayerLabel, restartButton, mainMenuButton, scoreboardLabel);
-
         restartButton.setOnAction(e -> {
             comm.setMessage(comm.charToByte("RESTART".toCharArray()));
             comm.sendMessage();
@@ -72,6 +70,8 @@ public class OnlineGame {
 
             new Menu(primaryStage).mainMenu();
         });
+
+        receivePlay(gridButtons, currentPlayerLabel, restartButton, mainMenuButton, scoreboardLabel);
 
         vbox.setStyle("-fx-spacing: 10; -fx-alignment: center;");
         gridPane.setStyle("-fx-alignment: center; -fx-hgap: 5; -fx-vgap: 5; -fx-padding: 20;");
@@ -141,13 +141,13 @@ public class OnlineGame {
 
                         gameArray = comm.getJogada();
 
+                        checkForWinner(restartButton, mainMenuButton, scoreboardLabel);
+
                         for (int i = 0; i < 3; i++) {
                             for (int j = 0; j < 3; j++) {
                                 boardButtons[i][j].setText(String.valueOf(gameArray[i * 3 + j]));
                             }
                         }
-
-                        checkForWinner(restartButton, mainMenuButton, scoreboardLabel);
 
                         currentPlayer = currentPlayer == player1 ? player2 : player1;
                         currentPlayerLabel.setText(getCurrentPlayerText());
@@ -164,12 +164,12 @@ public class OnlineGame {
             while (gameEnded) {
                 if (comm.receiveMessage()) {
                     if (Objects.equals(comm.getMessageStr(), "RESTART")) {
-                        resetGame(boardButtons, currentPlayerLabel, restartButton, mainMenuButton);
                         playerActionAlert("RESTART");
+                        resetGame(boardButtons, currentPlayerLabel, restartButton, mainMenuButton);
                     }
                     else if (Objects.equals(comm.getMessageStr(), "LEAVE")) {
-                        new Menu(primaryStage).mainMenu();
                         playerActionAlert("LEAVE");
+                        new Menu(primaryStage).mainMenu();
                     }
                 }
             }
@@ -187,9 +187,10 @@ public class OnlineGame {
             if (gameArray[condition[0]] != ' ' && gameArray[condition[0]] == gameArray[condition[1]] && gameArray[condition[1]] == gameArray[condition[2]]) {
                 Player winner = (gameArray[condition[0]] == player1.getTeam()) ? player1 : player2;
 
+                gameEnded = true;
+
                 gameEndedAlert(winner.getName());
                 winner.setWins(winner.getWins() + 1);
-                gameEnded = true;
 
                 restartButton.setDisable(false);
                 mainMenuButton.setDisable(false);
