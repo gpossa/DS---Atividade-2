@@ -134,19 +134,19 @@ public class Menu {
 
         Label titleLabel = new Label("AGUARDAR CONEXÃO");
         Label player1Label = new Label("Nome do Jogador 1 (Time X)");
+        Label player2IPLabel = new Label("Endereço IP do Jogador 2");
 
         TextField player1TextField = new TextField();
+        TextField player2IPTextField = new TextField();
 
         player1TextField.setPromptText("Jogador1");
+        player2IPTextField.setPromptText("IP");
 
         Button startListeningButton = new Button("Iniciar espera");
 
         startListeningButton.setOnAction(e -> {
-            startListeningButton.setDisable(true);
-            player1TextField.setDisable(true);
-
             UDPComm server = new UDPComm(1332);
-            String host = new String();
+            String host = player2IPTextField.getText();
 
             if (server.receiveMsg()) {
                 String message = server.getMsgStr();
@@ -161,7 +161,7 @@ public class Menu {
                 server.setMsg(server.charToByte((player1.getTeam() + player1.getName()).toCharArray()));
                 server.sendMsg();
 
-                host = server.host;
+                System.out.println(host);
 
                 UDPComm commOut = new UDPComm(host, 1332);
                 message = player2.getTeam() + player2.getName();
@@ -175,12 +175,13 @@ public class Menu {
         });
 
         player1TextField.setMaxWidth(controlsWidth);
+        player2IPTextField.setMaxWidth(controlsWidth);
         startListeningButton.setMaxWidth(controlsWidth);
 
         vbox.setStyle("-fx-spacing: 10; -fx-alignment: center;");
         titleLabel.setStyle("-fx-font-size: 24px; -fx-fill: black; -fx-font-weight: bold;");
 
-        vbox.getChildren().addAll(titleLabel, player1Label, player1TextField, startListeningButton);
+        vbox.getChildren().addAll(titleLabel, player1Label, player1TextField, player2IPLabel, player2IPTextField, startListeningButton);
 
         primaryStage.setScene(new Scene(vbox, 500, 400));
     }
@@ -209,7 +210,6 @@ public class Menu {
 
             Player player2 = new Player(player2Name, 'O');
 
-
             String host = player1IPTextField.getText();
 
             UDPComm client = new UDPComm(host, 1332);
@@ -218,7 +218,12 @@ public class Menu {
             client.setMsg(client.charToByte(msg.toCharArray()));
             client.sendMsg();
 
-            //UDPComm commIn = new UDPComm(1010);
+            UDPComm commIn = new UDPComm(1332);
+            if (commIn.receiveMsg()) {
+                msg = commIn.getMsgStr();
+                String player1Name = msg.substring(1);
+                Player player1 = new Player(player1Name, 'X');
+            }
         });
 
         player2TextField.setMaxWidth(controlsWidth);
