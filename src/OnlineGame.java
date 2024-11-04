@@ -25,6 +25,7 @@ public class OnlineGame {
     private final UDPComm comm;
 
     public OnlineGame(Stage primaryStage, Player player1, Player player2, boolean clientTurn, String host) {
+        comm = new UDPComm(host, 2020);
         this.primaryStage = primaryStage;
         this.player1 = player1;
         this.player2 = player2;
@@ -32,9 +33,7 @@ public class OnlineGame {
         this.currentPlayer = player1;
         this.clientTurn = clientTurn;
         this.host = host;
-        comm = new UDPComm(host, 2020);
         initializeGame();
-        createGameScene();
     }
 
     private void initializeGame() {
@@ -43,6 +42,7 @@ public class OnlineGame {
         gameEnded = false;
         Arrays.fill(gameArray, ' ');
         System.out.println(host);
+        createGameScene();
     }
 
     public void createGameScene() {
@@ -56,7 +56,7 @@ public class OnlineGame {
         Button restartButton  = new Button("Nova partida");
         Button mainMenuButton = new Button("Menu inicial");
 
-        currentPlayerLabel.setVisible(false);
+        currentPlayerLabel.setVisible(true);
         restartButton.setDisable(true);
         mainMenuButton.setDisable(true);
 
@@ -128,6 +128,20 @@ public class OnlineGame {
 
     private void receivePlay(Button[][] boardButtons, Label currentPlayerLabel, Button restartButton, Button mainMenuButton, Label scoreboardLabel) {
         new Thread(() -> {
+            while (gameEnded) {
+                if (comm.receiveMessage()) {
+                    if (Objects.equals(comm.getMessageStr(), "RESTART")) {
+                        Platform.runLater(() -> resetGame(boardButtons, currentPlayerLabel, restartButton, mainMenuButton));
+                        return;
+                    }
+                }
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+
             while (!gameEnded) {
                 if (!clientTurn && comm.receiveMessage()) {
                     Platform.runLater(() -> {
@@ -147,19 +161,6 @@ public class OnlineGame {
                         currentPlayerLabel.setText(getCurrentPlayerText());
                         clientTurn = true;
                     });
-                }
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                }
-            }
-
-            while (gameEnded) {
-                if (comm.receiveMessage()) {
-                    if (Objects.equals(comm.getMessageStr(), "RESTART")) {
-                        Platform.runLater(() -> resetGame(boardButtons, currentPlayerLabel, restartButton, mainMenuButton));
-                    }
                 }
                 try {
                     Thread.sleep(100);
